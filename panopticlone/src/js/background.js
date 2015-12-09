@@ -29,8 +29,8 @@ chrome.browserAction.onClicked.addListener(function (sourceTab) {
   if (videos && videos.length > 0) {
     // download videos
     for (var i = 0; i < videos.length; i += 1) {
-      sessionName = videos[i].sessionName.replace(/[ ,;:\.]/g, "-").replace(/-+/g, "-");
-      filename = [videos[i].date, sessionName].join("--") + ".mp4";
+      sessionName = videos[i].sessionName.replace(/[ ,;:\.]/g, "_").replace(/-+/g, "-");
+      filename = [Math.round(videos[i].date / 1000), sessionName].join("--") + ".mp4";
 
       chrome.downloads.download({
         "conflictAction": "prompt",
