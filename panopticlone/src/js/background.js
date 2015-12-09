@@ -1,3 +1,12 @@
+var createNotification = function (message) {
+  chrome.notifications.create(null, {
+    "iconUrl": "../../res/img/icon_64.png",
+    "message": message,
+    "title": "Panopticlone",
+    "type": "basic"
+  });
+};
+
 var videos = [];
 
 chrome.browserAction.setBadgeBackgroundColor({color: [0, 0, 0, 255]});
@@ -12,17 +21,12 @@ chrome.runtime.onMessage.addListener(
     chrome.browserAction.setBadgeText({text: videos.length.toString(), tabId: sender.tab.id});
 
     // send a notification
-    chrome.notifications.create(null, {
-      "iconUrl": "../../res/img/icon.png",
-      "message": "Found " + videos.length.toString() + " videos on this page. Click the eye icon to download them.",
-      "title": "Panopticlone",
-      "type": "basic"
-    });
+    createNotification("Found " + videos.length + " videos on this page. Click the eye icon to download them.");
   }
 );
 
 chrome.browserAction.onClicked.addListener(function (sourceTab) {
-  if (videos.length > 0) {
+  if (videos && videos.length > 0) {
     // download videos
     for (var i = 0; i < videos.length; i += 1) {
       sessionName = videos[i].sessionName.replace(/[ ,;:\.]/g, "-").replace(/-+/g, "-");
@@ -35,19 +39,9 @@ chrome.browserAction.onClicked.addListener(function (sourceTab) {
         "url": videos[i].videoURL
       })
 
-      chrome.notifications.create(null, {
-        "iconUrl": "../../res/img/icon.png",
-        "message": "Downloading \"" + videos[i].sessionName + "\"...",
-        "title": "Panopticlone",
-        "type": "basic"
-      });
+      createNotification("Downloading \"" + videos[i].sessionName + "\"...");
     }
   } else {
-    chrome.notifications.create(null, {
-      "iconUrl": "../../res/img/icon.png",
-      "message": "Couldn't find the Panopto folder ID. Try refreshing the page!",
-      "title": "Panopticlone",
-      "type": "basic"
-    });
+    createNotification("Couldn't find the Panopto folder ID. Try refreshing the page!");
   }
 });
