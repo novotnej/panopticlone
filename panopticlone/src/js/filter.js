@@ -7,12 +7,12 @@ var getFolderID = function (url) {
   }
 };
 
-var getVideos = function (obj) {
-  var video, dateInt, date, videos = [];
+var getSessions = function (obj) {
+  var video, dateInt, date, sessions = [];
 
   for (var i = 0; i < obj.d.Results.length; i += 1) {
     video = obj.d.Results[i];
-    videos.push({
+    sessions.push({
       "folderName": video.FolderName,
       "sessionName": video.SessionName,
       "videoURL": video.IosVideoUrl.replace(/\\/g, ""),
@@ -20,15 +20,15 @@ var getVideos = function (obj) {
     });
   };
 
-  videos.sort(function (a, b) {
+  sessions.sort(function (a, b) {
     if (a.date < b.date) return -1;
     if (a.date > b.date) return 1;
     return 0;
   });
 
-  if (videos.length > 0) {
+  if (sessions.length > 0) {
     chrome.runtime.sendMessage({
-      "videos": videos
+      "sessions": sessions
     });
   }
 };
@@ -36,7 +36,7 @@ var getVideos = function (obj) {
 
 // ------ Main
 
-var parseVideos = function (url) {
+var parseSessions = function (url) {
   // construct URL
   var postURL = location.protocol + "//" + window.location.hostname;
   postURL += "/Panopto/Services/Data.svc/GetSessions";
@@ -57,7 +57,7 @@ var parseVideos = function (url) {
   // set up callback
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && xhr.status == 200) {
-      getVideos(JSON.parse(xhr.responseText));
+      getSessions(JSON.parse(xhr.responseText));
     } else if (xhr.status !== 200) {
       console.log(xhr.responseText);
     }
@@ -67,9 +67,9 @@ var parseVideos = function (url) {
   xhr.send(JSON.stringify(payload));
 };
 
-parseVideos(window.location.href);
+parseSessions(window.location.href);
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.parseURL) {
-    parseVideos(message.parseURL);
+    parseSessions(message.parseURL);
   }
 });
