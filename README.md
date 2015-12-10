@@ -5,4 +5,4 @@ Automatically download lectures from Panopto (even when RSS feeds are disabled),
 
 ## Super-Quick Screencast
 
-<iframe width="420" height="315" src="https://www.youtube.com/embed/jVS30l9nLeY" frameborder="0" allowfullscreen></iframe>
+[![Panopticlone YouTube screencast](http://img.youtube.com/vi/jVS30l9nLeY/0.jpg)](http://www.youtube.com/watch?v=jVS30l9nLeY)
