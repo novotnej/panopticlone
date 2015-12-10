@@ -36,33 +36,40 @@ var getVideos = function (obj) {
 
 // ------ Main
 
-// construct URL
-var postURL = location.protocol + "//" + window.location.hostname;
-postURL += "/Panopto/Services/Data.svc/GetSessions";
+var parseVideos = function (url) {
+  // construct URL
+  var postURL = location.protocol + "//" + window.location.hostname;
+  postURL += "/Panopto/Services/Data.svc/GetSessions";
 
-// construct request to API
-// TODO check for folderID !== null
-var payload = {
-  "queryParameters": {
-    "maxResults": 9999,
-    "folderID": getFolderID(window.location.href),
+  // construct request to API
+  var payload = {
+    "queryParameters": {
+      "maxResults": 9999,
+      "folderID": getFolderID(url),
+    }
   }
-}
 
-// create request
-var xhr = new XMLHttpRequest();
-xhr.open("POST", postURL, true);
-xhr.setRequestHeader("Content-Type", "application/json");
+  // create request
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", postURL, true);
+  xhr.setRequestHeader("Content-Type", "application/json");
 
-// set up callback
-xhr.onreadystatechange = function () {
-  if (xhr.readyState === 4 && xhr.status == 200) {
-    getVideos(JSON.parse(xhr.responseText));
-  } else if (xhr.status !== 200) {
-    console.log(xhr.responseText);
+  // set up callback
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status == 200) {
+      getVideos(JSON.parse(xhr.responseText));
+    } else if (xhr.status !== 200) {
+      console.log(xhr.responseText);
+    }
   }
-}
 
-// send request
-xhr.send(JSON.stringify(payload));
+  // send request
+  xhr.send(JSON.stringify(payload));
+};
 
+parseVideos(window.location.href);
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+  if (message.parseURL) {
+    parseVideos(message.parseURL);
+  }
+});

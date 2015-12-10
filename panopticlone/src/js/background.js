@@ -8,42 +8,63 @@ var createNotification = function (message) {
   });
 };
 
+// sanitise file names/directory names
+var sanitise = function (str) {
+  return str.replace(/[ ,;:\/\\\.]/g, "_").replace(/(-|_)+/g, "$1");
+};
+
+
 // -------- Main logic
-var videos = [];
+var videos = []; // holds the video list
 
-chrome.browserAction.setBadgeBackgroundColor({color: [0, 0, 0, 255]});
-chrome.runtime.onMessage.addListener(
-  // when a message is received from the content filter...
-  function(message, sender, respond) {
-    videos = message.videos;
-    var date, filename;
-    var title = videos.length.toString() + " videos available on this page";
-
-    // set properties of the badge icon
-    chrome.browserAction.setTitle({title: title, tabId: sender.tab.id});
-    chrome.browserAction.setBadgeText({text: videos.length.toString(), tabId: sender.tab.id});
-
-    // send a notification
-    createNotification([
-        "Found",
-        videos.length.toString(),
-        "videos in \"" + videos[0].folderName + "\".",
-        "Click the eye icon to download them."
-    ].join(" "));
+chrome.tabs.onUpdated.addListener(
+  // when a tab changes, rescan it for videos
+  function (id, changeInfo, tab) {
+    if (changeInfo.url) {
+      chrome.tabs.sendMessage(id, {
+        "parseURL": changeInfo.url
+      });
+    }
   }
 );
 
+chrome.runtime.onMessage.addListener(
+  // when a message is received from the content filter...
+  function(message, sender, respond) {
+    if (message.videos && message.videos !== undefined) {
+      videos = message.videos;
+
+      var date, filename;
+      var title = videos.length.toString() + " video(s) available on this page";
+
+      // set properties of the badge icon
+      chrome.browserAction.setTitle({title: title, tabId: sender.tab.id});
+      chrome.browserAction.setBadgeText({text: videos.length.toString(), tabId: sender.tab.id});
+
+      // send a notification
+      createNotification([
+          "Found",
+          videos.length.toString(),
+          "videos in \"" + videos[0].folderName + "\".",
+          "Click the eye icon to download them."
+      ].join(" "));
+    }
+  }
+);
+
+chrome.browserAction.setBadgeBackgroundColor({color: [0, 0, 0, 255]});
 chrome.browserAction.onClicked.addListener(function (sourceTab) {
   // when the icon is clicked...
   if (videos && videos.length > 0) {
     // download each video
     for (var i = 0; i < videos.length; i += 1) {
-      sessionName = videos[i].sessionName.replace(/[ ,;:\.]/g, "_").replace(/-+/g, "-");
-      filename = [Math.round(videos[i].date / 1000), sessionName].join("--") + ".mp4";
+      folderName = sanitise(videos[i].folderName);
+      sessionName = sanitise(videos[i].sessionName);
+      filename = [Math.round(videos[i].date / 1000), sessionName].join("-") + ".mp4";
 
       chrome.downloads.download({
         "conflictAction": "prompt",
-        "filename": filename,
+        "filename": folderName + "/" + filename,
         "method": "GET",
         "url": videos[i].videoURL
       })
