@@ -52,6 +52,5 @@ var parseSessions = function (url) {
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.parseURL) {
     var sessions = parseSessions(message.parseURL);
-    console.log(sessions);
   }
 });
