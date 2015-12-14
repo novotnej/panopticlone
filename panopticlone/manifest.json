@@ -3,23 +3,18 @@
 
     "name": "Panopticlone",
     "description": "A Chrome extension to help users download videos from Panopto (an enterprise video content management system).",
-    "version": "0.2",
-
-    "background": {
-        "scripts": [
-            "./src/js/background.js"
-        ]
-    },
+    "version": "0.3.0",
 
     "browser_action": {
-        "default_icon": "res/img/icon_64.png"
+        "default_icon": "res/img/icon_64.png",
+        "default_popup": "src/html/popup.html"
     },
 
     "content_scripts": [
         {
             "matches": ["*://*/Panopto/*/List.aspx*"],
             "js": ["./src/js/filter.js"],
-            "run_at": "document_idle"
+            "run_at": "document_start"
         }
     ],
 

@@ -1,0 +1,16 @@
+body {
+    width: 40em;
+    height: 5em;
+    margin: 0 auto;
+    padding-top: 0;
+}
+
+div {
+    padding-bottom: 0.3em;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+.download {
+    float: right;
+}
