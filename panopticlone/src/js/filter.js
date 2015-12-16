@@ -11,7 +11,6 @@ var getFolderID = function (url) {
 };
 
 
-
 var parseSessions = function (url) {
   // construct URL
   var postURL = url.substring(0, url.indexOf("/", url.indexOf("//") + 2));

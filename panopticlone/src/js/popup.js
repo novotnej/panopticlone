@@ -131,14 +131,21 @@ var renderPage = function (sessions) {
 // --------- Parse response from Panopto
 
 var getSessions = function (obj) {
-  var video, dateInt, date, sessions = [];
+  var video, url, dateInt, date, sessions = [];
 
   for (var i = 0; i < obj.d.Results.length; i += 1) {
     video = obj.d.Results[i];
+    if (video.IosVideoUrl && video.IosVideoUrl.length > 0) {
+      url = video.IosVideoUrl.replace(/\\/g, "");
+    } else {
+      url = video.ViewerUrl.split("Panopto")[0];
+      url += "Panopto/Podcast/Embed/" + video.DeliveryID + ".mp4";
+    }
+
     sessions.push({
       "folderName": video.FolderName,
       "sessionName": video.SessionName,
-      "videoURL": video.IosVideoUrl.replace(/\\/g, ""),
+      "videoURL": url,
       "date": parseInt(video.StartTime.match(/Date\(([0-9]+)\)/i)[1])
     });
   };
