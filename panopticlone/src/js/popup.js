@@ -23,24 +23,16 @@ var createHeadingHTML = function (heading, sessions) {
   container.appendChild(sessionButton);
 };
 
+var download = function (sessions) {
+  // this allows downloads to be queued by the background script
+  chrome.runtime.sendMessage(null, {
+    "download": sessions
+  });
+};
+
 var createDownloadFunction = function (session) {
   return function () {
-    // make download parameters
-    folderName = sanitise(session.folderName);
-    sessionName = sanitise(session.sessionName);
-    filename = Math.round(session.date / 1000) + "-" + sessionName + ".mp4";
-
-    // send the download request
-    chrome.downloads.download({
-      "conflictAction": "prompt",
-      "filename": folderName + "/" + filename,
-      "method": "GET",
-      "url": session.videoURL
-    });
-
-    // send a notification
-    createNotification("Downloading \"" + session.sessionName + "\"...");
-
+    download(session);
     return false; // prevent default action
   };
 };
@@ -72,24 +64,6 @@ var createSessionHTML = function (session, downloadFunction) {
 
 // --------- Helper functions
 
-var sanitise = function (str) {
-  // sanitise file names/directory names
-  return str.replace(/[ ,;:\/\\\.]/g, "_").replace(/(-|_)+/g, "$1");
-};
-
-var createNotification = function (message, title) {
-  // lazy way of sending lots of similar notifications
-  if (! title) {
-    title = "Panopticlone";
-  }
-
-  chrome.notifications.create(null, {
-    "iconUrl": "../../res/img/icon_64.png",
-    "message": message,
-    "title": title,
-    "type": "basic"
-  });
-};
 
 var fail = function (message) {
   document.getElementById("session_list").innerHTML = "<h3>" + message + "</h3>";
@@ -102,7 +76,8 @@ var renderPage = function (sessions) {
   var sessionList = document.getElementById("session_list");
 
   if (sessions.length > 0) {
-    var downloadFunction, downloadFunctions = [];
+    var downloadFunction,
+        downloads = [];
 
     createHeadingHTML(sessions[0].folderName); // add heading
 
@@ -111,7 +86,7 @@ var renderPage = function (sessions) {
 
       // make the download function and append to list
       downloadFunction = createDownloadFunction(sessions[i]);
-      downloadFunctions.push(downloadFunction);
+      downloads.push(sessions[i]);
 
       // add session name and download button
       sessionList.appendChild(createSessionHTML(sessions[i], downloadFunction));
@@ -119,14 +94,13 @@ var renderPage = function (sessions) {
 
     // add function to download all lectures
     document.getElementById("download_all").onclick = function () {
-      for (var i = 0; i < downloadFunctions.length; i += 1) {
-        downloadFunctions[i]();
-      }
+      download(downloads);
     };
   } else {
     fail("Sorry, I couldn't find any sessions on this page. :(");
   }
 };
+
 
 // --------- Parse response from Panopto
 
@@ -163,7 +137,7 @@ var getSessions = function (obj) {
 // --------- Message handling
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-  if (message.success) {
+  if ((! message.download) && message.success) { // ignore download messages...
     renderPage(getSessions(message.panoptoResponse));
   } else {
     fail("Sorry, there was an error talking to Panopto. :(");
