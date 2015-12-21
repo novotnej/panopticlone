@@ -32,7 +32,7 @@ var download = function (sessions) {
 
 var createDownloadFunction = function (session) {
   return function () {
-    download(session);
+    download([session]);
     return false; // prevent default action
   };
 };
@@ -63,7 +63,6 @@ var createSessionHTML = function (session, downloadFunction) {
 
 
 // --------- Helper functions
-
 
 var fail = function (message) {
   document.getElementById("session_list").innerHTML = "<h3>" + message + "</h3>";
@@ -137,9 +136,9 @@ var getSessions = function (obj) {
 // --------- Message handling
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-  if ((! message.download) && message.success) { // ignore download messages...
+  if (message.panoptoResponse !== undefined) {
     renderPage(getSessions(message.panoptoResponse));
-  } else {
+  } else if (message.panoptoResponse === false) {
     fail("Sorry, there was an error talking to Panopto. :(");
   }
 });

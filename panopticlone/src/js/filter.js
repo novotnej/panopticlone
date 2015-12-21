@@ -34,12 +34,11 @@ var parseSessions = function (url) {
     if (xhr.readyState === 4 && xhr.status == 200) {
       chrome.runtime.sendMessage(null, {
         "panoptoResponse": JSON.parse(xhr.responseText),
-        "success": true
       });
     } else if (xhr.status !== 200) {
       console.log(xhr.responseText);
       chrome.runtime.sendMessage(null, {
-        "success": false
+        "panoptoResponse": false
       });
     }
   }
