@@ -108,13 +108,10 @@ var getSessions = function (obj) {
 
   for (var i = 0; i < obj.d.Results.length; i += 1) {
     video = obj.d.Results[i];
-    if (video.IosVideoUrl && video.IosVideoUrl.length > 0) {
-      url = video.IosVideoUrl.replace(/\\/g, "");
-    } else {
-      url = video.ViewerUrl.split("Panopto")[0];
-      url += "Panopto/Podcast/Embed/" + video.DeliveryID + ".mp4";
-    }
-
+    
+    url = video.ViewerUrl.split("Panopto")[0];
+    url += "Panopto/Podcast/Embed/" + video.DeliveryID + ".mp4";
+    
     sessions.push({
       "folderName": video.FolderName,
       "sessionName": video.SessionName,
